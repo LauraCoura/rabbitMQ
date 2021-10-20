@@ -8,7 +8,7 @@ services:
       - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=123
+      - RABBITMQ_DEFAULT_PASS=admin
   rabbit-node-2:
     image: lucifer8591/rabbitmq-server:3.7.17
     hostname: rabbit-node-2
