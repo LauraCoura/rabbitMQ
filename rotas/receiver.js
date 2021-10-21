@@ -31,7 +31,7 @@ const receiveMsg = async () => {
 
   channel.consume(q.queue, msg => {
     if (msg.content) {
-      console.log("\x1b[36m%s\x1b[0m", `Message: ${msg.content.toString()}`);
+      console.log(`Message: ${msg.content.toString()}`);
     }
 
     }, { noAck: true })
