@@ -30,7 +30,7 @@ const sendMsg = async () => {
 
   if (messenger.msg) {
     channel.publish(exchangeName, messenger.routingKey, Buffer.from(messenger.msg));
-    console.log('Sent: ', messenger.msg);
+    console.log("\x1b[36m%s\x1b[0m", 'Sent: ', messenger.msg);
 
     setTimeout(() => {
       connection.close();
