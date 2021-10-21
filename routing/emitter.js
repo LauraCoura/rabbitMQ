@@ -1,25 +1,63 @@
+// File with the functions to send messages
+
 const amqplib = require('amqplib');
+const { execute } = require('../examples/crawl');
 
-const exchangeName = "direct_logs";
+const exchangeName = 'direct_tweets';
+
 const args = process.argv.slice(2);
-const msg = args[1] || 'Subscribe, Like, Comment';
-const logType = args[0]
+const messenger = {};
 
-console.log(args, msg);
+if(args[0] === 'crawler') {
+  messenger.port = args[1];
+  messenger.usersArray = args[2].split(' ');
+  messenger.amount = args[3];
+
+} else {
+  messenger.port = args[1];
+  messenger.routingKey = args[2];
+  messenger.msg = args[3] || 'No message';
+}
+
+console.log(messenger);
 
 const sendMsg = async () => {
-  const connection = await amqplib.connect('amqp://admin:admin@0.0.0.0:5672');
+  const url = messenger.port && messenger.port.length === 4 ? connect(messenger.port) : localhost();
+
+  const connection = await amqplib.connect(url);
   const channel = await connection.createChannel();
+  await channel.assertExchange(exchangeName, 'direct', { durable: true });
 
-  await channel.assertExchange(exchangeName, 'direct', {durable: false});
-  channel.publish(exchangeName, logType, Buffer.from(msg));
+  if (messenger.msg) {
+    channel.publish(exchangeName, messenger.routingKey, Buffer.from(messenger.msg));
+    console.log('Sent: ', messenger.msg);
 
-  console.log('Sent: ', msg);
-  
-  setTimeout(() => {
-    connection.close();
-    process.exit(0);
-  }, 500)
+    setTimeout(() => {
+      connection.close();
+      process.exit(0);
+    }, 500)
+
+  } else {
+    const arrayMsg = await execute(messenger.usersArray, messenger.amount);
+
+    arrayMsg.forEach(msg => {
+      channel.publish(exchangeName, msg.screenName, Buffer.from(msg.text));
+      console.log('Sent: ', msg.text);
+    });
+
+    setTimeout(() => {
+      connection.close();
+      process.exit(0);
+    }, 500)
+  }
+}
+
+const connect = (port) => {
+  return `amqp://admin:admin@0.0.0.0:${port}`;
+}
+
+const localhost = () => {
+  return `amqp://localhost`;
 }
 
 sendMsg();
