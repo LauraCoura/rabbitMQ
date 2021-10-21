@@ -1,34 +1,48 @@
+// File with the functions to receive messages
+
 const amqplib = require('amqplib');
 
-const args = process.argv.slice(2);
+const exchangeName = 'direct_tweets';
 
-if (args.length == 0) {
-  console.log("Usage: receive_logs_direct.js [info] [warning] [error]");
-  process.exit(1);
-}
+let args = process.argv.slice(2);
 
-const exchangeName = "direct_logs";
+const messenger = {
+  port: args[0],
+  routingKey: args.slice(1)
+};
 
-const recieveMsg = async () => {
-  const connection = await amqplib.connect('amqp://admin:admin@0.0.0.0:5673');
+console.log(messenger);
+
+const receiveMsg = async () => {
+  const url = messenger.port && messenger.port.length ===  4 ? connect(messenger.port) : localhost();
+
+  const connection = await amqplib.connect(url);
   const channel = await connection.createChannel();
 
-  await channel.assertExchange(exchangeName, 'direct', {durable: false});
+  await channel.assertExchange(exchangeName, 'direct', { durable: true });
 
-  const q = await channel.assertQueue('', {exclusive: true});
+  const q = await channel.assertQueue('', { exclusive: true });
 
-  console.log(`Waiting for messages in queue: ${q.queue}`);
-
-  args.forEach(function(severity) {
+  messenger.routingKey.forEach(function (severity) {
     channel.bindQueue(q.queue, exchangeName, severity);
   });
 
+  console.log('listening...');
+
   channel.consume(q.queue, msg => {
-    if(msg.content) {      
-      console.log(`Routing Key: ${msg.fields.routingKey}, Message: ${msg.content.toString()}`);
+    if (msg.content) {
+      console.log(`Message: ${msg.content.toString()}`);
     }
-    
-  }, {noAck: true})
+
+    }, { noAck: true })
 }
 
-recieveMsg();
+const connect = (port) => {
+  return `amqp://admin:admin@0.0.0.0:${port}`;
+}
+
+const localhost = () => {
+  return `amqp://localhost`;
+}
+
+receiveMsg();
