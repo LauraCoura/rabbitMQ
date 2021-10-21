@@ -27,7 +27,7 @@ const receiveMsg = async () => {
     channel.bindQueue(q.queue, exchangeName, severity);
   });
 
-  console.log("\x1b[34m%s\x1b[0m", 'Listening...');
+  console.log("\x1b[32m%s\x1b[0m", 'Listening...');
 
   channel.consume(q.queue, msg => {
     if (msg.content) {
