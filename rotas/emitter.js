@@ -42,7 +42,7 @@ const sendMsg = async () => {
 
     arrayMsg.forEach(msg => {
       channel.publish(exchangeName, msg.screenName, Buffer.from(msg.text));
-      console.log("\x1b[0.42;0.68;0.87;255;255m", 'Sent: ', msg.text);
+      console.log("\x1b[33m%s\x1b[0m", 'Sent: ', msg.text);
     });
 
     setTimeout(() => {
