@@ -42,7 +42,7 @@ const sendMsg = async () => {
 
     arrayMsg.forEach(msg => {
       channel.publish(exchangeName, msg.screenName, Buffer.from(msg.text));
-      console.log('Sent: ', msg.text);
+      console.log('Sent: ', msg.text, "color: blue");
     });
 
     setTimeout(() => {
